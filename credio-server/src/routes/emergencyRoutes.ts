@@ -12,7 +12,7 @@ router.use(authenticate)
 // POST /api/emergency/sos - Create SOS request
 router.post(
     '/sos',
-    rateLimiter({ windowMs: 60 * 1000, max: 5 }), // 5 SOS per minute (prevent abuse)
+    rateLimiter({ windowMs: 60 * 1000, max: 10 }), // 10 SOS per minute (prevent abuse while allowing testing)
     [
         body('location').isObject(),
         body('location.latitude').isFloat({ min: -90, max: 90 }),

@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI } from "@google/generative-ai"
+import OpenAI from "openai"
 import Redis from "ioredis"
 import crypto from "crypto"
 import { logger } from "../utils/logger"
@@ -8,18 +8,12 @@ import { getCachedPhrase } from "../constants/emergencyPhrases"
 const redis = new Redis(process.env.REDIS_URL!)
 
 export class TranslationService {
-  private genAI: GoogleGenerativeAI
-  private model: any
+  private openai: OpenAI
   private cache: Map<string, string>
 
   constructor() {
-    this.genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!)
-    this.model = this.genAI.getGenerativeModel({
-      model: "gemini-1.5-flash",
-      generationConfig: {
-        temperature: 0.1, // Very low for consistent translations
-        maxOutputTokens: 1024,
-      },
+    this.openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY!,
     })
     this.cache = new Map()
   }
@@ -46,7 +40,7 @@ export class TranslationService {
         return cachedTranslation
       }
 
-      // Generate new translation with Gemini
+      // Generate new translation with OpenAI
       const prompt = `
 Translate the following emergency/disaster safety message to ${getLanguageName(targetLang)}.
 
@@ -69,8 +63,13 @@ OUTPUT FORMAT:
 Provide ONLY the translation, no explanations or meta-commentary.
       `.trim()
 
-      const result = await this.model.generateContent(prompt)
-      const translation = result.response.text().trim()
+      const result = await this.openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [{ role: "user", content: prompt }],
+        temperature: 0.1,
+        max_tokens: 1024,
+      })
+      const translation = result.choices[0].message.content?.trim() || text
 
       // Cache the translation
       this.cache.set(cacheKey, translation)
@@ -80,14 +79,14 @@ Provide ONLY the translation, no explanations or meta-commentary.
       return translation
     } catch (error) {
       logger.error("Translation failed", { text, targetLang, error })
-      
+
       // Try offline phrase cache as fallback
       const fallback = getCachedPhrase(text, targetLang)
       if (fallback) {
         logger.info("Using offline phrase cache", { targetLang })
         return fallback
       }
-      
+
       return text // Return original if all fails
     }
   }
@@ -116,8 +115,13 @@ TRANSLATED PROTOCOL:
     `.trim()
 
     try {
-      const result = await this.model.generateContent(prompt)
-      return result.response.text().trim()
+      const result = await this.openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [{ role: "user", content: prompt }],
+        temperature: 0.1,
+        max_tokens: 1024,
+      })
+      return result.choices[0].message.content?.trim() || protocol
     } catch (error) {
       logger.error("Protocol translation failed", { error })
       return protocol
@@ -135,8 +139,13 @@ LANGUAGE CODE:
     `.trim()
 
     try {
-      const result = await this.model.generateContent(prompt)
-      return result.response.text().trim().toLowerCase()
+      const result = await this.openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [{ role: "user", content: prompt }],
+        temperature: 0.1,
+        max_tokens: 10,
+      })
+      return result.choices[0].message.content?.trim().toLowerCase() || "en"
     } catch (error) {
       logger.error("Language detection failed", { error })
       return "en" // Default to English

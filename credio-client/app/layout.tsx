@@ -17,7 +17,17 @@ export const metadata: Metadata = {
     images: ['/og-image.png'],
   },
   manifest: '/manifest.json',
+  icons: {
+    icon: '/icon.svg',
+    apple: '/icon.svg',
+  },
+}
+
+export const viewport = {
   themeColor: '#ef4444',
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
 }
 
 export default function RootLayout({

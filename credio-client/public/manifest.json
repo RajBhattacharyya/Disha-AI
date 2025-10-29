@@ -1,0 +1,66 @@
+{
+    "name": "Credio - Disaster Response Platform",
+    "short_name": "Credio",
+    "description": "AI-powered disaster response and emergency management platform",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#EF4444",
+    "orientation": "portrait-primary",
+    "icons": [
+        {
+            "src": "/icon.svg",
+            "sizes": "any",
+            "type": "image/svg+xml",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "/icon",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ],
+    "categories": [
+        "emergency",
+        "safety",
+        "utilities"
+    ],
+    "shortcuts": [
+        {
+            "name": "Emergency SOS",
+            "short_name": "SOS",
+            "description": "Send emergency SOS signal",
+            "url": "/emergency/sos",
+            "icons": [
+                {
+                    "src": "/icon-192.png",
+                    "sizes": "192x192"
+                }
+            ]
+        },
+        {
+            "name": "Disaster Map",
+            "short_name": "Map",
+            "description": "View disaster map",
+            "url": "/map",
+            "icons": [
+                {
+                    "src": "/icon-192.png",
+                    "sizes": "192x192"
+                }
+            ]
+        },
+        {
+            "name": "AI Assistant",
+            "short_name": "Chat",
+            "description": "Get emergency guidance",
+            "url": "/chat",
+            "icons": [
+                {
+                    "src": "/icon-192.png",
+                    "sizes": "192x192"
+                }
+            ]
+        }
+    ]
+}

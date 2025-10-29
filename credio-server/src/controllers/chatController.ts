@@ -36,24 +36,8 @@ export async function sendMessage(req: AuthRequest, res: Response, next: NextFun
       }
     }
 
-    // Process query with RAG
+    // Process query with RAG (this already saves messages to DB)
     const result = await ragService.processQuery(userId, message, session.id)
-
-    // Update session with new messages
-    const updatedMessages = [
-      ...(session.messages as any[]),
-      { role: 'user', content: message, timestamp: new Date() },
-      { role: 'assistant', content: result.response, timestamp: new Date() },
-    ]
-
-    await prisma.chatSession.update({
-      where: { id: session.id },
-      data: {
-        messages: updatedMessages,
-        context: result.context,
-        updatedAt: new Date(),
-      },
-    })
 
     logger.info('Chat message processed', { userId, sessionId: session.id })
 
@@ -103,27 +87,36 @@ export async function streamMessage(req: AuthRequest, res: Response, next: NextF
     // Retrieve context
     const context = await ragService['retrieveContext'](message, userId, intent)
 
-    // Stream response from Gemini
+    // Stream response from OpenAI
     let fullResponse = ''
 
     const chatHistory = session.messages as any[]
 
     // Import streaming capability
-    const { GoogleGenerativeAI } = await import('@google/generative-ai')
-    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!)
-    const model = genAI.getGenerativeModel({
-      model: 'gemini-1.5-flash',
-      systemInstruction: ragService['getSystemPrompt'](),
+    const OpenAI = await import('openai')
+    const openai = new OpenAI.default({
+      apiKey: process.env.OPENAI_API_KEY!,
     })
 
     const prompt = ragService['buildPrompt'](message, context, chatHistory)
 
-    const result = await model.generateContentStream(prompt)
+    const stream = await openai.chat.completions.create({
+      model: 'gpt-4o',
+      messages: [
+        { role: 'system', content: ragService['getSystemPrompt']() },
+        { role: 'user', content: prompt }
+      ],
+      temperature: 0.7,
+      max_tokens: 2048,
+      stream: true,
+    })
 
-    for await (const chunk of result.stream) {
-      const text = chunk.text()
-      fullResponse += text
-      res.write(`data: ${JSON.stringify({ chunk: text })}\n\n`)
+    for await (const chunk of stream) {
+      const text = chunk.choices[0]?.delta?.content || ''
+      if (text) {
+        fullResponse += text
+        res.write(`data: ${JSON.stringify({ chunk: text })}\n\n`)
+      }
     }
 
     // Send completion signal

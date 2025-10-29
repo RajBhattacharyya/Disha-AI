@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI } from "@google/generative-ai"
+import OpenAI from "openai"
 import { prisma } from "../prismaClient"
 import { vectorStore } from "./vectorStore"
 import { logger } from "../utils/logger"
@@ -11,20 +11,11 @@ import {
 } from "../types/chat.types"
 
 export class RAGService {
-  private genAI: GoogleGenerativeAI
-  private model: any
+  private openai: OpenAI
 
   constructor() {
-    this.genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!)
-    this.model = this.genAI.getGenerativeModel({
-      model: "gemini-1.5-flash",
-      systemInstruction: this.getSystemPrompt(),
-      generationConfig: {
-        temperature: 0.2, // Low temperature for consistent safety advice
-        topP: 0.8,
-        topK: 40,
-        maxOutputTokens: 2048,
-      },
+    this.openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY!,
     })
   }
 
@@ -37,7 +28,7 @@ export class RAGService {
     try {
       logger.info("Processing query", { userId, query, sessionId })
 
-      // Step 1: Load chat history for context
+      // Step 1: Load chat history for context (get fresh data)
       const chatHistory = await this.loadChatHistory(sessionId)
 
       // Step 2: Detect query intent
@@ -47,20 +38,11 @@ export class RAGService {
       // Step 3: Retrieve relevant context from multiple sources
       const context = await this.retrieveContext(query, userId, intent)
 
-      // Step 4: Generate response using Gemini
+      // Step 4: Generate response using Gemini with current history
       const response = await this.generateResponse(query, context, chatHistory)
 
-      // Step 5: Save conversation to database
-      await this.saveChatMessage(sessionId, {
-        role: "user",
-        content: query,
-        timestamp: new Date(),
-      })
-      await this.saveChatMessage(sessionId, {
-        role: "assistant",
-        content: response,
-        timestamp: new Date(),
-      })
+      // Step 5: Save both user message and assistant response atomically
+      await this.saveConversation(sessionId, query, response, context.sources)
 
       logger.info("Query processed successfully", { sessionId })
 
@@ -70,8 +52,14 @@ export class RAGService {
         intent,
         sessionId,
       }
-    } catch (error) {
-      logger.error("Query processing failed", { error, userId, query })
+    } catch (error: any) {
+      logger.error("Query processing failed - Full error details:", {
+        errorMessage: error?.message,
+        errorStack: error?.stack,
+        errorName: error?.name,
+        userId,
+        query: query.substring(0, 100)
+      })
       return {
         response: this.getFallbackResponse(query),
         context: [],
@@ -81,7 +69,7 @@ export class RAGService {
     }
   }
 
-  // Detect user intent using Gemini
+  // Detect user intent using OpenAI
   private async detectIntent(query: string): Promise<QueryIntent> {
     const intentPrompt = `
 Analyze this disaster-related query and classify the intent:
@@ -99,8 +87,14 @@ Respond with ONLY the intent category, nothing else.
     `.trim()
 
     try {
-      const result = await this.model.generateContent(intentPrompt)
-      const intent = result.response.text().trim()
+      const result = await this.openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [{ role: "user", content: intentPrompt }],
+        temperature: 0.3,
+        max_tokens: 50,
+      })
+      const intent = result.choices[0].message.content?.trim() || "GENERAL_QUESTION"
+      logger.info("Intent detected", { query: query.substring(0, 50), intent })
       return intent as QueryIntent
     } catch (error) {
       logger.error("Intent detection failed", { error, query })
@@ -155,7 +149,7 @@ Respond with ONLY the intent category, nothing else.
         orderBy: { sentAt: "desc" },
       })
 
-      return {
+      const result = {
         documents: relevantDocs,
         disasters: nearbyDisasters,
         resources: emergencyResources,
@@ -163,6 +157,15 @@ Respond with ONLY the intent category, nothing else.
         userLocation: user.location,
         sources: [...new Set(relevantDocs.map((d) => d.metadata.source))],
       }
+
+      logger.info("Context retrieved", {
+        docsCount: relevantDocs.length,
+        disastersCount: nearbyDisasters.length,
+        resourcesCount: emergencyResources.length,
+        alertsCount: recentAlerts.length,
+      })
+
+      return result
     } catch (error) {
       logger.error("Context retrieval failed", { error, userId })
       return {
@@ -176,7 +179,7 @@ Respond with ONLY the intent category, nothing else.
     }
   }
 
-  // Generate response using Gemini with full context
+  // Generate response using OpenAI with full context
   private async generateResponse(
     query: string,
     context: RAGContext,
@@ -185,11 +188,34 @@ Respond with ONLY the intent category, nothing else.
     const prompt = this.buildPrompt(query, context, chatHistory)
 
     try {
-      const result = await this.model.generateContent(prompt)
-      return result.response.text()
-    } catch (error) {
-      logger.error("Response generation failed", { error, query })
-      return this.getFallbackResponse(query)
+      logger.info("Generating response for query", { queryPreview: query.substring(0, 50) })
+
+      const result = await this.openai.chat.completions.create({
+        model: "gpt-4o",
+        messages: [
+          { role: "system", content: this.getSystemPrompt() },
+          { role: "user", content: prompt }
+        ],
+        temperature: 0.7,
+        max_tokens: 2048,
+      })
+
+      const response = result.choices[0].message.content || ""
+      logger.info("Response generated successfully", {
+        responseLength: response.length,
+        queryPreview: query.substring(0, 50)
+      })
+
+      return response
+    } catch (error: any) {
+      logger.error("Response generation FAILED - Details:", {
+        errorMessage: error?.message || 'Unknown error',
+        errorName: error?.name,
+        query: query.substring(0, 100),
+        hasApiKey: !!process.env.OPENAI_API_KEY
+      })
+      // Re-throw to trigger fallback in processQuery
+      throw error
     }
   }
 
@@ -199,23 +225,24 @@ Respond with ONLY the intent category, nothing else.
     context: RAGContext,
     history: ChatMessage[]
   ): string {
-    return `
-CONVERSATION HISTORY:
-${history
+    const historyText = history.length > 0
+      ? history
         .slice(-6)
         .map((m) => `${m.role.toUpperCase()}: ${m.content}`)
-        .join("\n")}
+        .join("\n")
+      : "No previous conversation"
 
-RETRIEVED KNOWLEDGE:
-${context.documents
+    const knowledgeText = context.documents.length > 0
+      ? context.documents
         .map(
           (doc, i) =>
             `[${i + 1}] ${doc.content}\n(Source: ${doc.metadata.source}, Relevance: ${doc.score.toFixed(2)})`
         )
-        .join("\n\n")}
+        .join("\n\n")
+      : "No specific knowledge documents found"
 
-ACTIVE DISASTERS NEARBY:
-${context.disasters
+    const disastersText = context.disasters.length > 0
+      ? context.disasters
         .map(
           (d) => `
 - ${d.type}: ${d.title}
@@ -224,10 +251,11 @@ ${context.disasters
   Location: ${JSON.stringify(d.location)}
 `
         )
-        .join("\n")}
+        .join("\n")
+      : "No active disasters nearby"
 
-EMERGENCY RESOURCES NEARBY:
-${context.resources
+    const resourcesText = context.resources.length > 0
+      ? context.resources
         .map(
           (r) => `
 - ${r.name} (${r.type})
@@ -235,17 +263,36 @@ ${context.resources
   Availability: ${r.availability}
 `
         )
-        .join("\n")}
+        .join("\n")
+      : "No emergency resources found nearby"
+
+    const alertsText = context.alerts.length > 0
+      ? context.alerts.map((a) => `- ${a.alertType}: ${a.message}`).join("\n")
+      : "No recent alerts"
+
+    const prompt = `
+CONVERSATION HISTORY:
+${historyText}
+
+RETRIEVED KNOWLEDGE:
+${knowledgeText}
+
+ACTIVE DISASTERS NEARBY:
+${disastersText}
+
+EMERGENCY RESOURCES NEARBY:
+${resourcesText}
 
 RECENT ALERTS:
-${context.alerts.map((a) => `- ${a.alertType}: ${a.message}`).join("\n")}
+${alertsText}
 
 USER LOCATION: ${JSON.stringify(context.userLocation)}
 
 USER QUERY: ${query}
 
 INSTRUCTIONS:
-- Provide accurate, actionable disaster safety guidance
+- Provide accurate, actionable disaster safety guidance SPECIFIC to the user's query
+- Answer the EXACT question asked - different questions should get different answers
 - If immediate danger detected, start with "⚠️ URGENT:" and give critical actions first
 - Reference the retrieved knowledge and cite sources in brackets like [1], [2]
 - Mention relevant nearby resources and disasters
@@ -255,8 +302,19 @@ INSTRUCTIONS:
 - If you don't have enough information, ask clarifying questions
 - For non-urgent queries, provide comprehensive guidance
 
+IMPORTANT: Your response must directly address the specific question: "${query}"
+
 RESPONSE:
     `.trim()
+
+    logger.info("Prompt built", {
+      queryLength: query.length,
+      historyLength: history.length,
+      docsCount: context.documents.length,
+      promptLength: prompt.length,
+    })
+
+    return prompt
   }
 
   // System prompt for Gemini model
@@ -325,6 +383,47 @@ Always:
     } catch (error) {
       logger.error("Failed to load chat history", { error, sessionId })
       return []
+    }
+  }
+
+  // Save complete conversation atomically
+  private async saveConversation(
+    sessionId: string,
+    userMessage: string,
+    assistantResponse: string,
+    sources: string[]
+  ): Promise<void> {
+    try {
+      const session = await prisma.chatSession.findUnique({
+        where: { id: sessionId },
+      })
+
+      if (!session) {
+        logger.warn("Session not found, cannot save conversation", { sessionId })
+        return
+      }
+
+      const messages = (session.messages as any[]) || []
+      const timestamp = new Date()
+
+      // Add both messages atomically
+      messages.push(
+        { role: "user", content: userMessage, timestamp },
+        { role: "assistant", content: assistantResponse, timestamp }
+      )
+
+      await prisma.chatSession.update({
+        where: { id: sessionId },
+        data: {
+          messages,
+          context: sources,
+          updatedAt: timestamp,
+        },
+      })
+
+      logger.info("Conversation saved", { sessionId, messageCount: messages.length })
+    } catch (error) {
+      logger.error("Failed to save conversation", { error, sessionId })
     }
   }
 
