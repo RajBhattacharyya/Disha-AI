@@ -118,6 +118,7 @@ model User {
   emergencyContacts      Json
   role                   UserRole @default(USER)
   notificationPreferences Json
+  deviceTokens           Json     @default("[]")
   createdAt              DateTime @default(now())
   updatedAt              DateTime @updatedAt
 
