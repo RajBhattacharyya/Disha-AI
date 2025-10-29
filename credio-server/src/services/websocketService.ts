@@ -1,20 +1,13 @@
 import { Server } from 'socket.io';
-import { createServer } from 'http';
 import { logger } from '../utils/logger';
 import { alertService } from './alertService';
 import { prisma } from '../prismaClient';
 
 class WebSocketService {
-    private io: Server;
+    private io!: Server;
 
-    constructor(httpServer: any) {
-        this.io = new Server(httpServer, {
-            cors: {
-                origin: process.env.CLIENT_URL,
-                credentials: true
-            },
-            transports: ['websocket', 'polling']
-        });
+    initialize(io: Server) {
+        this.io = io;
         this.setupHandlers();
     }
 
@@ -102,4 +95,4 @@ class WebSocketService {
     }
 }
 
-export const websocketService = new WebSocketService(createServer());
+export const websocketService = new WebSocketService();
