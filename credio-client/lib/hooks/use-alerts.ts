@@ -60,10 +60,49 @@ export function useMarkAllAlertsRead() {
 
 export function useDismissAlert() {
   const queryClient = useQueryClient()
+  const { toast } = useToast()
 
   return useMutation({
     mutationFn: (alertId: string) => apiClient.dismissAlert(alertId),
+    onMutate: async (alertId) => {
+      // Cancel outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ['alerts'] })
+
+      // Snapshot previous values
+      const previousAlerts = queryClient.getQueriesData({ queryKey: ['alerts'] })
+
+      // Optimistically remove the alert from all queries
+      queryClient.setQueriesData({ queryKey: ['alerts'] }, (old: any) => {
+        if (!old) return old
+        return old.filter((alert: any) => alert.id !== alertId)
+      })
+
+      return { previousAlerts }
+    },
     onSuccess: () => {
+      toast({
+        description: 'Alert dismissed',
+      })
+    },
+    onError: (error: any, alertId, context) => {
+      // Rollback on error (unless it's 404, which means it's already gone)
+      if (error?.response?.status !== 404) {
+        queryClient.setQueriesData({ queryKey: ['alerts'] }, context?.previousAlerts)
+        const message = error?.response?.data?.error?.message || 'Failed to dismiss alert'
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: message,
+        })
+      } else {
+        // If 404, the alert is already gone, so just show success
+        toast({
+          description: 'Alert dismissed',
+        })
+      }
+    },
+    onSettled: () => {
+      // Always refetch after error or success
       queryClient.invalidateQueries({ queryKey: ['alerts'] })
     },
   })

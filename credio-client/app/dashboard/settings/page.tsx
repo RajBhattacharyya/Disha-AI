@@ -2,6 +2,8 @@
 
 import { useState } from 'react'
 import { useAuthStore } from '@/lib/store/auth-store'
+import { useLanguageStore, Language } from '@/lib/store/language-store'
+import { useTranslation } from '@/lib/translations'
 import { useUpdateNotificationPreferences } from '@/lib/hooks/use-user'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -15,10 +17,14 @@ import {
     SelectValue,
 } from '@/components/ui/select'
 import { Separator } from '@/components/ui/separator'
+import { useToast } from '@/hooks/use-toast'
 import { Bell, Globe, Volume2 } from 'lucide-react'
 
 export default function SettingsPage() {
     const { user } = useAuthStore()
+    const { language, setLanguage: setGlobalLanguage } = useLanguageStore()
+    const t = useTranslation(language)
+    const { toast } = useToast()
     const updatePreferences = useUpdateNotificationPreferences()
 
     const [notifications, setNotifications] = useState({
@@ -27,18 +33,27 @@ export default function SettingsPage() {
         email: true,
     })
 
-    const [language, setLanguage] = useState(user?.preferredLanguage || 'en')
     const [soundEnabled, setSoundEnabled] = useState(true)
 
     const handleSaveNotifications = () => {
         updatePreferences.mutate(notifications)
     }
 
+    const handleLanguageChange = (newLanguage: Language) => {
+        setGlobalLanguage(newLanguage)
+        toast({
+            title: t.settings.languageChanged,
+            description: `Language changed to ${newLanguage === 'en' ? 'English' : 'हिंदी'}`,
+        })
+        // Optionally update user preference on server
+        // apiClient.updateUserProfile(user?.id, { preferredLanguage: newLanguage })
+    }
+
     return (
         <div className="space-y-6">
             <div>
-                <h1 className="text-3xl font-bold">Settings</h1>
-                <p className="text-muted-foreground">Manage your app preferences</p>
+                <h1 className="text-3xl font-bold">{t.settings.title}</h1>
+                <p className="text-muted-foreground">{t.settings.subtitle}</p>
             </div>
 
             {/* Notifications */}
@@ -46,7 +61,7 @@ export default function SettingsPage() {
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                         <Bell className="h-5 w-5" />
-                        Notifications
+                        {t.settings.notifications}
                     </CardTitle>
                     <CardDescription>Choose how you want to receive alerts</CardDescription>
                 </CardHeader>
@@ -114,25 +129,21 @@ export default function SettingsPage() {
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                         <Globe className="h-5 w-5" />
-                        Language
+                        {t.settings.language}
                     </CardTitle>
-                    <CardDescription>Select your preferred language</CardDescription>
+                    <CardDescription>{t.settings.languageDescription}</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <div className="space-y-4">
                         <div className="space-y-2">
-                            <Label>Preferred Language</Label>
-                            <Select value={language} onValueChange={setLanguage}>
+                            <Label>{t.settings.selectLanguage}</Label>
+                            <Select value={language} onValueChange={(value) => handleLanguageChange(value as Language)}>
                                 <SelectTrigger>
                                     <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="en">English</SelectItem>
-                                    <SelectItem value="es">Spanish</SelectItem>
-                                    <SelectItem value="fr">French</SelectItem>
-                                    <SelectItem value="hi">Hindi</SelectItem>
-                                    <SelectItem value="zh">Chinese</SelectItem>
-                                    <SelectItem value="ar">Arabic</SelectItem>
+                                    <SelectItem value="en">{t.settings.english} (English)</SelectItem>
+                                    <SelectItem value="hi">{t.settings.hindi} (हिंदी)</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>

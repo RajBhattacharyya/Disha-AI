@@ -23,14 +23,14 @@ router.get(
 // GET /api/alerts/unread-count - Get unread alert count
 router.get('/unread-count', alertController.getUnreadAlertCount)
 
-// GET /api/alerts/:id - Get single alert
-router.get('/:id', [param('id').isUUID()], validate, alertController.getAlertById)
+// PATCH /api/alerts/read-all - Mark all alerts as read (must come before /:id)
+router.patch('/read-all', alertController.markAllAlertsRead)
 
-// PATCH /api/alerts/:id/read - Mark alert as read
+// PATCH /api/alerts/:id/read - Mark alert as read (must come before /:id)
 router.patch('/:id/read', [param('id').isUUID()], validate, alertController.markAlertRead)
 
-// PATCH /api/alerts/read-all - Mark all alerts as read
-router.patch('/read-all', alertController.markAllAlertsRead)
+// GET /api/alerts/:id - Get single alert
+router.get('/:id', [param('id').isUUID()], validate, alertController.getAlertById)
 
 // DELETE /api/alerts/:id - Dismiss/delete alert
 router.delete('/:id', [param('id').isUUID()], validate, alertController.dismissAlert)

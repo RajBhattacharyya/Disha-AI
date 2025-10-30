@@ -5,6 +5,7 @@ import { useNearbyDisasters } from '@/lib/hooks/use-disasters'
 import { useAlerts, useUnreadAlerts } from '@/lib/hooks/use-alerts'
 import { useUserRiskAssessment } from '@/lib/hooks/use-disasters'
 import { useWebSocket } from '@/lib/websocket'
+import { apiClient } from '@/lib/api-client'
 import { DisasterCard } from '@/components/disasters/DisasterCard'
 import { AlertNotification } from '@/components/alerts/AlertNotification'
 import { SOSButton } from '@/components/emergency/SOSButton'
@@ -32,12 +33,36 @@ export default function DashboardPage() {
   const { isConnected } = useWebSocket()
 
   const { data: nearbyDisasters, isLoading: loadingDisasters } = useNearbyDisasters(100)
-  const { data: alerts, isLoading: loadingAlerts } = useAlerts()
+  const { data: alerts, isLoading: loadingAlerts, refetch: refetchAlerts } = useAlerts()
   const { data: unreadCount } = useUnreadAlerts()
   const { data: riskAssessment } = useUserRiskAssessment()
 
   const activeDisasters = nearbyDisasters?.filter((d: any) => d.status === 'ACTIVE') || []
   const recentAlerts = alerts?.slice(0, 3) || []
+
+  const handleDismissAlert = async (alertId: string) => {
+    try {
+      await apiClient.dismissAlert(alertId)
+      refetchAlerts()
+    } catch (error) {
+      console.error('Error dismissing alert:', error)
+    }
+  }
+
+  const handleViewAlertDetails = async (alert: any) => {
+    try {
+      // Mark as read
+      await apiClient.markAlertRead(alert.id)
+      refetchAlerts()
+
+      // Navigate to disaster details if available
+      if (alert.disaster?.id) {
+        router.push(`/disasters/${alert.disaster.id}`)
+      }
+    } catch (error) {
+      console.error('Error marking alert as read:', error)
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -168,14 +193,8 @@ export default function DashboardPage() {
               <AlertNotification
                 key={alert.id}
                 alert={alert}
-                onDismiss={() => {
-                  // Handle dismiss
-                }}
-                onViewDetails={() => {
-                  if (alert.disaster?.id) {
-                    router.push(`/disasters/${alert.disaster.id}`)
-                  }
-                }}
+                onDismiss={() => handleDismissAlert(alert.id)}
+                onViewDetails={() => handleViewAlertDetails(alert)}
               />
             ))}
           </div>

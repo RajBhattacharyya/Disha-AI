@@ -146,11 +146,11 @@ class APIClient {
   }
 
   async getAlertById(alertId: string) {
-    return this.client.get(`/alerts/${alertId}`)
+    return this.client.get(`/api/alerts/${alertId}`)
   }
 
   async markAlertRead(alertId: string) {
-    return this.client.patch(`/alerts/${alertId}/read`)
+    return this.client.patch(`/api/alerts/${alertId}/read`)
   }
 
   async markAllAlertsRead() {
@@ -158,7 +158,7 @@ class APIClient {
   }
 
   async dismissAlert(alertId: string) {
-    return this.client.delete(`/alerts/${alertId}`)
+    return this.client.delete(`/api/alerts/${alertId}`)
   }
 
   // ==================== CHAT ====================
