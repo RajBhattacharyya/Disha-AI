@@ -48,6 +48,11 @@ export default function LoginPage() {
                 throw new Error(data.error?.message || 'Login failed')
             }
 
+            // Debug: Log the response data
+            console.log('Login response:', data)
+            console.log('User data:', data.data.user)
+            console.log('User role:', data.data.user.role)
+
             // Store user and token
             setUser(data.data.user, data.data.token)
 

@@ -6,6 +6,8 @@ import alertRoutes from './alertRoutes'
 import chatRoutes from './chatRoutes'
 import emergencyRoutes from './emergencyRoutes'
 import translationRoutes from './translationRoutes'
+import placesRoutes from './placesRoutes'
+import adminRoutes from './adminRoutes'
 
 const router = Router()
 
@@ -16,5 +18,7 @@ router.use('/alerts', alertRoutes)
 router.use('/chat', chatRoutes)
 router.use('/emergency', emergencyRoutes)
 router.use('/translate', translationRoutes)
+router.use('/places', placesRoutes)
+router.use('/admin', adminRoutes)
 
 export default router

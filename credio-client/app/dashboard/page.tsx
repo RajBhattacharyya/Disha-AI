@@ -20,6 +20,8 @@ import {
   TrendingUp,
   Wifi,
   WifiOff,
+  ExternalLink,
+  Heart,
 } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -112,6 +114,45 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
       )}
+
+      {/* Government Relief Funds */}
+      <Card className="border-orange-500 bg-gradient-to-r from-orange-50 to-white dark:from-orange-950/20 dark:to-background">
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <Heart className="h-5 w-5 text-orange-600" />
+            <CardTitle className="text-orange-900 dark:text-orange-100">
+              Support Disaster Relief
+            </CardTitle>
+          </div>
+          <CardDescription>
+            Contribute to official Indian government disaster relief funds
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-3 md:grid-cols-2">
+            <ReliefFundLink
+              title="PM National Relief Fund"
+              description="Prime Minister's fund for disaster relief"
+              url="https://pmnrf.gov.in/en/online-donation"
+            />
+            <ReliefFundLink
+              title="National Disaster Response Fund"
+              description="NDRF for emergency disaster response"
+              url="https://ndrf.gov.in/"
+            />
+            <ReliefFundLink
+              title="Chief Minister's Relief Fund"
+              description="State-level disaster relief contributions"
+              url="https://www.india.gov.in/chief-ministers-relief-fund"
+            />
+            <ReliefFundLink
+              title="PM CARES Fund"
+              description="Emergency relief and assistance"
+              url="https://www.pmcares.gov.in/en/"
+            />
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Recent Alerts */}
       {recentAlerts.length > 0 && (
@@ -261,5 +302,37 @@ function QuickActionCard({
         </CardHeader>
       </Card>
     </Link>
+  )
+}
+
+function ReliefFundLink({
+  title,
+  description,
+  url,
+}: {
+  title: string
+  description: string
+  url: string
+}) {
+  return (
+    <a
+      href={url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="group flex items-start gap-3 p-4 rounded-lg border bg-white dark:bg-card hover:shadow-md transition-all hover:border-orange-500"
+    >
+      <div className="p-2 rounded-lg bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 group-hover:scale-110 transition-transform">
+        <Heart className="h-4 w-4" />
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2">
+          <h3 className="font-semibold text-sm text-orange-900 dark:text-orange-100 group-hover:text-orange-600 dark:group-hover:text-orange-400">
+            {title}
+          </h3>
+          <ExternalLink className="h-3 w-3 text-muted-foreground group-hover:text-orange-600" />
+        </div>
+        <p className="text-xs text-muted-foreground mt-1">{description}</p>
+      </div>
+    </a>
   )
 }

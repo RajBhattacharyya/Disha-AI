@@ -23,6 +23,7 @@ import {
   Settings,
   LogOut,
   Bell,
+  ShieldCheck,
 } from 'lucide-react'
 import { useAuthStore } from '@/lib/store/auth-store'
 import { useUnreadAlerts } from '@/lib/hooks/use-alerts'
@@ -138,9 +139,21 @@ export function Navigation() {
                   <div className="flex flex-col space-y-1">
                     <p className="text-sm font-medium">{user.name}</p>
                     <p className="text-xs text-muted-foreground">{user.email}</p>
+                    {user.role === 'ADMIN' && (
+                      <Badge variant="secondary" className="w-fit text-xs">Admin</Badge>
+                    )}
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
+                {user.role === 'ADMIN' && (
+                  <>
+                    <DropdownMenuItem onClick={() => router.push('/admin')}>
+                      <ShieldCheck className="mr-2 h-4 w-4" />
+                      Admin Panel
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                  </>
+                )}
                 <DropdownMenuItem onClick={() => router.push('/dashboard/profile')}>
                   <User className="mr-2 h-4 w-4" />
                   Profile

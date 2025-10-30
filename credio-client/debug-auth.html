@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Auth Store</title>
+</head>
+<body>
+    <h1>Auth Store Debug</h1>
+    <div id="output"></div>
+    
+    <script>
+        // Check localStorage
+        const authStorage = localStorage.getItem('auth-storage');
+        const output = document.getElementById('output');
+        
+        if (authStorage) {
+            const parsed = JSON.parse(authStorage);
+            output.innerHTML = '<h2>Auth Storage Contents:</h2><pre>' + 
+                JSON.stringify(parsed, null, 2) + '</pre>';
+            
+            if (parsed.state && parsed.state.user) {
+                output.innerHTML += '<h2>User Role:</h2><p>' + parsed.state.user.role + '</p>';
+                output.innerHTML += '<h2>Is Admin?</h2><p>' + (parsed.state.user.role === 'ADMIN') + '</p>';
+            }
+        } else {
+            output.innerHTML = '<p>No auth storage found. Please log in first.</p>';
+        }
+        
+        // Also check cookies
+        output.innerHTML += '<h2>Cookies:</h2><pre>' + document.cookie + '</pre>';
+    </script>
+</body>
+</html>

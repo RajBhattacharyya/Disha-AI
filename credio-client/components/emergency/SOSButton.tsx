@@ -27,12 +27,57 @@ export function SOSButton() {
   const { user } = useAuthStore()
   const { currentLocation } = useLocationStore()
 
+  const requestLocation = async (): Promise<{ latitude: number; longitude: number; address: string }> => {
+    return new Promise((resolve, reject) => {
+      if (!navigator.geolocation) {
+        reject(new Error('Geolocation is not supported by your browser'))
+        return
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          const { latitude, longitude } = position.coords
+
+          // Try to get address from reverse geocoding (simplified)
+          let address = `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`
+
+          try {
+            // You can add reverse geocoding API here if needed
+            // For now, just use coordinates
+            address = `Location: ${latitude.toFixed(4)}, ${longitude.toFixed(4)}`
+          } catch (error) {
+            console.error('Error getting address:', error)
+          }
+
+          resolve({ latitude, longitude, address })
+        },
+        (error) => {
+          console.error('Geolocation error:', error)
+          reject(error)
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 0,
+        }
+      )
+    })
+  }
+
   const triggerSOS = useMutation({
     mutationFn: async () => {
-      const location = currentLocation || {
-        latitude: 0,
-        longitude: 0,
-        address: 'Unknown location',
+      // Request location permission and get current location
+      let location
+      try {
+        location = await requestLocation()
+      } catch (error) {
+        console.error('Location error:', error)
+        // Use fallback location if permission denied
+        location = currentLocation || {
+          latitude: 0,
+          longitude: 0,
+          address: 'Location unavailable - permission denied',
+        }
       }
 
       const response = await apiClient.createSOSRequest({
@@ -43,9 +88,12 @@ export function SOSButton() {
         mediaUrls: [],
       })
 
+      console.log('SOS Response:', response)
       return response
     },
     onSuccess: (data) => {
+      console.log('SOS Success data:', data)
+
       toast({
         title: '🚨 SOS Activated',
         description:
@@ -54,13 +102,22 @@ export function SOSButton() {
 
       setShowConfirm(false)
 
-      // Redirect to tracking page
-      router.push(`/emergency/track/${data.data.sosId}`)
+      // Handle different response structures
+      const sosId = (data as any)?.data?.sos?.id || (data as any)?.data?.sosId || (data as any)?.sos?.id || (data as any)?.sosId
+
+      if (sosId) {
+        // Redirect to tracking page
+        router.push(`/emergency/track/${sosId}`)
+      } else {
+        // Just go to SOS page if no ID
+        router.push('/emergency/sos')
+      }
     },
-    onError: () => {
+    onError: (error: any) => {
+      console.error('SOS Error:', error)
       toast({
         title: 'SOS Failed',
-        description: 'Unable to send SOS. Please call emergency services directly.',
+        description: error?.message || 'Unable to send SOS. Please call emergency services directly.',
         variant: 'destructive',
       })
     },
@@ -92,12 +149,9 @@ export function SOSButton() {
                 emergency contacts with your current location.
               </p>
               <p className="font-semibold">Only use in genuine emergencies.</p>
-              {!currentLocation && (
-                <p className="text-yellow-600 font-medium">
-                  ⚠️ Location not available. Please enable location services for accurate
-                  emergency response.
-                </p>
-              )}
+              <p className="text-blue-600 font-medium">
+                📍 You will be asked to share your location for accurate emergency response.
+              </p>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

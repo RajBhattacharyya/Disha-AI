@@ -48,6 +48,21 @@ export default function GoogleMapComponent({
 }: GoogleMapComponentProps) {
     const [selectedMarker, setSelectedMarker] = useState<MapMarker | null>(null)
     const [map, setMap] = useState<google.maps.Map | null>(null)
+    const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ''
+
+    // Show error if API key is missing
+    if (!apiKey) {
+        return (
+            <div style={{ height }} className="flex items-center justify-center bg-gray-100 rounded">
+                <div className="text-center p-6">
+                    <p className="text-red-600 font-semibold mb-2">Google Maps API Key Missing</p>
+                    <p className="text-sm text-gray-600">
+                        Add NEXT_PUBLIC_GOOGLE_MAPS_API_KEY to your .env.local file
+                    </p>
+                </div>
+            </div>
+        )
+    }
 
     const onLoad = useCallback((map: google.maps.Map) => {
         setMap(map)
@@ -58,6 +73,11 @@ export default function GoogleMapComponent({
     }, [])
 
     const getMarkerIcon = (marker: MapMarker) => {
+        // Check if google maps is loaded
+        if (typeof google === 'undefined' || !google.maps) {
+            return undefined
+        }
+
         if (marker.type === 'user') {
             return {
                 path: google.maps.SymbolPath.CIRCLE,
@@ -106,7 +126,7 @@ export default function GoogleMapComponent({
 
     return (
         <div style={{ height }}>
-            <LoadScript googleMapsApiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ''}>
+            <LoadScript googleMapsApiKey={apiKey}>
                 <GoogleMap
                     mapContainerStyle={mapContainerStyle}
                     center={{ lat: center.latitude, lng: center.longitude }}

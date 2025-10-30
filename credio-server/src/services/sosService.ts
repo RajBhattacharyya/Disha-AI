@@ -37,24 +37,20 @@ export class SOSService {
 
         logger.warn('SOS ACTIVATED', { sosId: sos.id, userId, type: emergencyType })
 
-        // Trigger immediate actions in parallel
-        await Promise.all([
+        // Trigger immediate notifications (but don't auto-dispatch)
+        // Admin will manually dispatch after reviewing
+        Promise.all([
             this.notifyNearbyResponders(sos),
             this.sendToEmergencyServices(sos),
             this.alertEmergencyContacts(user, sos),
             this.broadcastToAdmins(sos)
-        ])
+        ]).catch(err => logger.error('Error sending SOS notifications:', err))
 
-        // Update status
-        await prisma.sOSRequest.update({
-            where: { id: sos.id },
-            data: { status: 'DISPATCHED' }
-        })
-
+        // Keep status as PENDING - admin will dispatch manually
         return {
             sosId: sos.id,
-            status: 'DISPATCHED',
-            estimatedResponse: '5-10 min',
+            status: 'PENDING',
+            estimatedResponse: 'Awaiting dispatch',
             trackingUrl: `${process.env.CLIENT_URL}/emergency/track/${sos.id}`
         }
     }

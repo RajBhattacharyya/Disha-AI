@@ -8,6 +8,7 @@ import routes from './routes'
 import { errorHandler } from './middleware/errorHandler'
 import { websocketService } from './services/websocketService'
 import { logger } from './utils/logger'
+import adminRoutes from './routes/adminRoutes'
 
 const app: Application = express()
 const httpServer = createServer(app)
@@ -43,6 +44,7 @@ app.get('/health', (_req, res) => {
 
 // API Routes
 app.use('/api', routes)
+app.use('/api/admin', adminRoutes)
 
 // Error handling
 app.use(errorHandler)

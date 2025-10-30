@@ -58,3 +58,16 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Lea
+flet Map Styles */
+@import 'leaflet/dist/leaflet.css';
+
+.leaflet-container {
+  font-family: inherit;
+}
+
+.custom-marker {
+  background: transparent;
+  border: none;
+}
