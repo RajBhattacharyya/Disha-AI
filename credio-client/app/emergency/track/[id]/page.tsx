@@ -30,14 +30,14 @@ interface SOSTracking {
         address: string
     }
     createdAt: string
-    updatedAt: string
     responder?: {
         name: string
         phone: string
         role: string
+        eta?: string
     }
-    estimatedArrival?: string
-    notes?: string
+    responderNotes?: string
+    timeline?: any[]
 }
 
 export default function EmergencyTrackingPage() {
@@ -57,9 +57,15 @@ export default function EmergencyTrackingPage() {
     const fetchTracking = async () => {
         try {
             const response = await apiClient.getSOSTracking(params.id as string)
-            setTracking(response.data.sos)
+
+            // Extract the tracking data from response
+            const trackingData = response.data.data || response.data
+
+            setTracking(trackingData)
             setError(null)
         } catch (err: any) {
+            console.error('SOS Tracking Error:', err)
+            console.error('Error response:', err.response)
             setError(err.response?.data?.error?.message || 'Failed to load tracking information')
         } finally {
             setLoading(false)
@@ -214,9 +220,9 @@ export default function EmergencyTrackingPage() {
                                     <AlertCircle className="h-4 w-4 text-blue-500" />
                                     <AlertDescription>
                                         Emergency responders have been dispatched to your location.
-                                        {tracking.estimatedArrival && (
+                                        {tracking.responder?.eta && (
                                             <span className="block mt-1 font-semibold">
-                                                Estimated arrival: {tracking.estimatedArrival}
+                                                Estimated arrival: {tracking.responder.eta}
                                             </span>
                                         )}
                                     </AlertDescription>
@@ -314,13 +320,13 @@ export default function EmergencyTrackingPage() {
                 )}
 
                 {/* Notes */}
-                {tracking.notes && (
+                {tracking.responderNotes && (
                     <Card>
                         <CardHeader>
-                            <CardTitle>Additional Notes</CardTitle>
+                            <CardTitle>Responder Notes</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <p className="text-gray-700">{tracking.notes}</p>
+                            <p className="text-gray-700">{tracking.responderNotes}</p>
                         </CardContent>
                     </Card>
                 )}
@@ -333,14 +339,14 @@ export default function EmergencyTrackingPage() {
                     <CardContent>
                         <div className="space-y-2">
                             <a
-                                href="tel:911"
+                                href="tel:100"
                                 className="flex items-center justify-between p-3 bg-red-50 rounded-lg hover:bg-red-100 transition-colors"
                             >
                                 <span className="font-semibold">Emergency Services</span>
-                                <span className="text-red-600 font-bold">911</span>
+                                <span className="text-red-600 font-bold">100</span>
                             </a>
                             <p className="text-xs text-gray-500 mt-2">
-                                If your situation worsens, call 911 immediately
+                                If your situation worsens, call 100 immediately
                             </p>
                         </div>
                     </CardContent>

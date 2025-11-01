@@ -15,7 +15,6 @@ export interface SOSResponse {
   sosId: string
   status: string
   estimatedResponse: string
-  trackingUrl: string
 }
 
 export type SOSStatus = 'PENDING' | 'DISPATCHED' | 'IN_PROGRESS' | 'RESOLVED' | 'CANCELLED'

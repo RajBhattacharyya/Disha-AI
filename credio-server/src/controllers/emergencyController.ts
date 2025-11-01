@@ -2,7 +2,7 @@ import { Response, NextFunction } from 'express'
 import { AuthRequest } from '../middleware/auth'
 import { prisma } from '../prismaClient'
 import { sosService } from '../services/sosService'
-import {logger} from '../utils/logger'
+import { logger } from '../utils/logger'
 
 // Create SOS request
 export async function createSOSRequest(req: AuthRequest, res: Response, next: NextFunction) {
@@ -43,6 +43,8 @@ export async function getSOSTracking(req: AuthRequest, res: Response, next: Next
     const { id } = req.params
     const userId = req.user!.userId
 
+    logger.info('Getting SOS tracking', { sosId: id, userId })
+
     const sos = await prisma.sOSRequest.findUnique({
       where: { id },
       select: {
@@ -52,11 +54,14 @@ export async function getSOSTracking(req: AuthRequest, res: Response, next: Next
     })
 
     if (!sos) {
+      logger.warn('SOS request not found', { sosId: id })
       return res.status(404).json({
         success: false,
         error: { message: 'SOS request not found' },
       })
     }
+
+    logger.info('SOS found, checking permissions', { sosUserId: sos.userId, requestUserId: userId })
 
     // Users can view their own SOS or if they're the assigned responder
     if (sos.userId !== userId && sos.responderAssigned !== userId) {

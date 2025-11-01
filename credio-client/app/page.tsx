@@ -12,7 +12,7 @@ export default function HomePage() {
             <Shield className="h-20 w-20 text-primary animate-pulse" />
           </div>
           <h1 className="text-4xl md:text-6xl font-bold mb-6">
-            Stay Safe with <span className="text-primary">Credio</span>
+            Stay Safe with <span className="text-primary">Disha AI</span>
           </h1>
           <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
             AI-powered disaster response assistant providing real-time alerts, emergency guidance,
@@ -32,7 +32,7 @@ export default function HomePage() {
       {/* Features Section */}
       <section className="py-16 px-4">
         <div className="container mx-auto">
-          <h2 className="text-3xl font-bold text-center mb-12">Why Choose Credio?</h2>
+          <h2 className="text-3xl font-bold text-center mb-12">Why Choose Disha AI?</h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             <FeatureCard
               icon={<Zap className="h-8 w-8" />}
@@ -97,7 +97,7 @@ export default function HomePage() {
         <div className="container mx-auto text-center">
           <h2 className="text-3xl font-bold mb-4">Ready to Stay Safe?</h2>
           <p className="text-muted-foreground mb-8">
-            Join thousands of users who trust Credio for disaster preparedness
+            Join thousands of users who trust Disha AI for disaster preparedness
           </p>
           <Button size="lg" asChild>
             <Link href="/register">Create Your Account</Link>

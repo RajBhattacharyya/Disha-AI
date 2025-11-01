@@ -187,7 +187,7 @@ LANGUAGE CODE:
     }
 
     // Check if critical terms are preserved (warnings)
-    const criticalSymbols = ["⚠️", "🚨", "911", "112"]
+    const criticalSymbols = ["⚠️", "🚨", "100", "112"]
     for (const symbol of criticalSymbols) {
       if (original.includes(symbol) && !translated.includes(symbol)) {
         logger.warn("Critical symbol missing in translation", { symbol })

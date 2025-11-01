@@ -105,7 +105,7 @@ export default function RegisterPage() {
 
             toast({
                 title: 'Account created!',
-                description: "Welcome to Credio. Let's get you set up.",
+                description: "Welcome to Disha AI. Let's get you set up.",
             })
 
             router.push('/dashboard')
@@ -140,7 +140,7 @@ export default function RegisterPage() {
                         <Shield className="h-12 w-12 text-primary" />
                     </div>
                     <CardTitle className="text-2xl font-bold">Create your account</CardTitle>
-                    <CardDescription>Join Credio to stay safe during disasters</CardDescription>
+                    <CardDescription>Join Disha AI to stay safe during disasters</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <form onSubmit={handleSubmit} className="space-y-4">

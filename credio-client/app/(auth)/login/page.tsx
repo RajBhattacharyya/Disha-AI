@@ -80,7 +80,7 @@ export default function LoginPage() {
                     <div className="flex justify-center mb-4">
                         <Shield className="h-12 w-12 text-primary" />
                     </div>
-                    <CardTitle className="text-2xl font-bold">Welcome to Credio</CardTitle>
+                    <CardTitle className="text-2xl font-bold">Welcome to Disha AI</CardTitle>
                     <CardDescription>
                         Log in to access disaster alerts and AI assistance
                     </CardDescription>

@@ -54,7 +54,7 @@ export function Navigation() {
           <div className="flex h-16 items-center justify-between">
             <Link href="/" className="flex items-center gap-2">
               <Shield className="h-8 w-8 text-primary" />
-              <span className="text-2xl font-bold text-primary">Credio</span>
+              <span className="text-2xl font-bold text-primary">Disha AI</span>
             </Link>
 
             <div className="flex items-center gap-4">
@@ -80,7 +80,7 @@ export function Navigation() {
           <Link href="/dashboard" className="flex items-center gap-2">
             <Shield className="h-8 w-8 text-primary" />
             <span className="text-2xl font-bold text-primary hidden sm:inline">
-              Credio
+              Disha AI
             </span>
           </Link>
 

@@ -48,7 +48,7 @@ export function AdminSidebar() {
         <div className="flex items-center gap-3">
           <Shield className="h-8 w-8 text-primary" />
           <div>
-            <h2 className="text-xl font-bold">Credio</h2>
+            <h2 className="text-xl font-bold">Disha AI</h2>
             <p className="text-xs text-muted-foreground">Admin Panel</p>
           </div>
         </div>

@@ -10,6 +10,8 @@ import { Loader2, Send, Bot } from 'lucide-react'
 import { useAuthStore } from '@/lib/store/auth-store'
 import { cn } from '@/lib/utils'
 import { apiClient } from '@/lib/api-client'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 
 interface Message {
   role: 'user' | 'assistant'
@@ -81,7 +83,7 @@ export function ChatInterface({ sessionId }: { sessionId?: string }) {
             </AvatarFallback>
           </Avatar>
           <div>
-            <h3 className="font-semibold">Credio AI Assistant</h3>
+            <h3 className="font-semibold">Disha AI Assistant</h3>
             <p className="text-xs text-muted-foreground">
               {sendMessage.isPending ? 'Typing...' : 'Online'}
             </p>
@@ -95,7 +97,7 @@ export function ChatInterface({ sessionId }: { sessionId?: string }) {
           {messages.length === 0 && (
             <div className="text-center text-muted-foreground py-8">
               <Bot className="h-12 w-12 mx-auto mb-4 text-primary" />
-              <p className="text-lg font-medium">Welcome to Credio AI</p>
+              <p className="text-lg font-medium">Welcome to Disha AI</p>
               <p className="text-sm mt-2">
                 Ask me about disaster safety, evacuation routes, or emergency resources.
               </p>
@@ -121,7 +123,36 @@ export function ChatInterface({ sessionId }: { sessionId?: string }) {
                   msg.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted'
                 )}
               >
-                <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                {msg.role === 'assistant' ? (
+                  <div className="prose prose-sm dark:prose-invert max-w-none">
+                    <ReactMarkdown
+                      remarkPlugins={[remarkGfm]}
+                      components={{
+                        p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+                        ul: ({ children }) => <ul className="list-disc ml-4 mb-2 space-y-1">{children}</ul>,
+                        ol: ({ children }) => <ol className="list-decimal ml-4 mb-2 space-y-1">{children}</ol>,
+                        li: ({ children }) => <li className="text-sm">{children}</li>,
+                        strong: ({ children }) => <strong className="font-bold">{children}</strong>,
+                        em: ({ children }) => <em className="italic">{children}</em>,
+                        h1: ({ children }) => <h1 className="text-lg font-bold mb-2">{children}</h1>,
+                        h2: ({ children }) => <h2 className="text-base font-bold mb-2">{children}</h2>,
+                        h3: ({ children }) => <h3 className="text-sm font-bold mb-1">{children}</h3>,
+                        code: ({ children, className }) => {
+                          const isInline = !className
+                          return isInline ? (
+                            <code className="bg-muted-foreground/20 px-1 py-0.5 rounded text-xs">{children}</code>
+                          ) : (
+                            <code className="block bg-muted-foreground/20 p-2 rounded text-xs overflow-x-auto">{children}</code>
+                          )
+                        },
+                      }}
+                    >
+                      {msg.content}
+                    </ReactMarkdown>
+                  </div>
+                ) : (
+                  <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                )}
                 <span className="text-xs opacity-70 mt-1 block">
                   {msg.timestamp.toLocaleTimeString([], {
                     hour: '2-digit',

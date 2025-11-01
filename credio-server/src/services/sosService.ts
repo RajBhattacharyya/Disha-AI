@@ -50,8 +50,7 @@ export class SOSService {
         return {
             sosId: sos.id,
             status: 'PENDING',
-            estimatedResponse: 'Awaiting dispatch',
-            trackingUrl: `${process.env.CLIENT_URL}/emergency/track/${sos.id}`
+            estimatedResponse: 'Awaiting dispatch'
         }
     }
 
@@ -258,13 +257,17 @@ If this is a false alarm, please contact ${user.phoneNumber || user.email} immed
             id: sos.id,
             status: sos.status,
             emergencyType: sos.emergencyType,
+            severity: sos.severity,
+            description: sos.description,
             location: sos.location,
             createdAt: sos.createdAt,
             responder: sos.responder ? {
                 name: sos.responder.name,
                 phone: sos.responder.phoneNumber,
+                role: 'RESPONDER',
                 eta: `${eta} minutes`
             } : null,
+            responderNotes: sos.responderNotes,
             timeline: await this.getSOSTimeline(sosId)
         }
     }

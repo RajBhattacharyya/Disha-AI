@@ -143,17 +143,17 @@ export function SOSButton() {
             <AlertDialogTitle className="text-destructive">
               ⚠️ Activate Emergency SOS?
             </AlertDialogTitle>
-            <AlertDialogDescription className="space-y-2">
-              <p>
-                This will immediately notify emergency services, nearby responders, and your
-                emergency contacts with your current location.
-              </p>
-              <p className="font-semibold">Only use in genuine emergencies.</p>
-              <p className="text-blue-600 font-medium">
-                📍 You will be asked to share your location for accurate emergency response.
-              </p>
+            <AlertDialogDescription>
+              This will immediately notify emergency services, nearby responders, and your
+              emergency contacts with your current location.
             </AlertDialogDescription>
           </AlertDialogHeader>
+          <div className="space-y-2 text-sm">
+            <p className="font-semibold">Only use in genuine emergencies.</p>
+            <p className="text-blue-600 font-medium">
+              📍 You will be asked to share your location for accurate emergency response.
+            </p>
+          </div>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction

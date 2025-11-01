@@ -8,11 +8,11 @@ import type { Metadata } from 'next'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Credio - AI Disaster Response Assistant',
+  title: 'Disha AI - AI Disaster Response Assistant',
   description: 'Real-time disaster alerts, AI-powered emergency guidance, and instant SOS response',
   keywords: 'disaster, emergency, AI assistant, safety, alerts, SOS',
   openGraph: {
-    title: 'Credio - AI Disaster Response Assistant',
+    title: 'Disha AI - AI Disaster Response Assistant',
     description: 'Stay safe with real-time disaster alerts and AI guidance',
     images: ['/og-image.png'],
   },

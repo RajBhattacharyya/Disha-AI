@@ -76,27 +76,27 @@ class APIClient {
 
   // ==================== USER ====================
   async getUserProfile(userId: string) {
-    return this.client.get(`/users/${userId}`)
+    return this.client.get(`/api/users/${userId}`)
   }
 
   async updateUserProfile(userId: string, data: Partial<UserProfile>) {
-    return this.client.patch(`/users/${userId}`, data)
+    return this.client.patch(`/api/users/${userId}`, data)
   }
 
   async updateUserLocation(userId: string, location: Location) {
-    return this.client.patch(`/users/${userId}/location`, { location })
+    return this.client.patch(`/api/users/${userId}/location`, { location })
   }
 
   async updateNotificationPreferences(userId: string, preferences: NotificationPreferences) {
-    return this.client.patch(`/users/${userId}/notifications`, preferences)
+    return this.client.patch(`/api/users/${userId}/notifications`, preferences)
   }
 
   async addEmergencyContact(userId: string, contact: EmergencyContact) {
-    return this.client.post(`/users/${userId}/emergency-contacts`, contact)
+    return this.client.post(`/api/users/${userId}/emergency-contacts`, contact)
   }
 
   async removeEmergencyContact(userId: string, contactId: string) {
-    return this.client.delete(`/users/${userId}/emergency-contacts/${contactId}`)
+    return this.client.delete(`/api/users/${userId}/emergency-contacts/${contactId}`)
   }
 
   // ==================== DISASTERS ====================
@@ -111,7 +111,7 @@ class APIClient {
   }
 
   async getDisasterById(id: string) {
-    return this.client.get(`/disasters/${id}`)
+    return this.client.get(`/api/disasters/${id}`)
   }
 
   async getNearbyDisasters(location: Location, radius: number = 100) {
@@ -125,11 +125,11 @@ class APIClient {
   }
 
   async getDisasterGuidance(disasterId: string) {
-    return this.client.get(`/disasters/${disasterId}/guidance`)
+    return this.client.get(`/api/disasters/${disasterId}/guidance`)
   }
 
   async getDisasterResources(disasterId: string) {
-    return this.client.get(`/disasters/${disasterId}/resources`)
+    return this.client.get(`/api/disasters/${disasterId}/resources`)
   }
 
   async getUserRiskAssessment() {
@@ -179,11 +179,11 @@ class APIClient {
   }
 
   async updateChatSession(sessionId: string, title: string) {
-    return this.client.patch(`/chat/sessions/${sessionId}`, { title })
+    return this.client.patch(`/api/chat/sessions/${sessionId}`, { title })
   }
 
   async deleteChatSession(sessionId: string) {
-    return this.client.delete(`/chat/sessions/${sessionId}`)
+    return this.client.delete(`/api/chat/sessions/${sessionId}`)
   }
 
   // ==================== EMERGENCY / SOS ====================

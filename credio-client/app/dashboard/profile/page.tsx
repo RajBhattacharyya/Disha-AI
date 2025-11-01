@@ -41,6 +41,7 @@ export default function ProfilePage() {
     phone: '',
     relationship: '',
   })
+  const [isContactDialogOpen, setIsContactDialogOpen] = useState(false)
 
   const handleSaveProfile = async () => {
     updateProfile.mutate(formData, {
@@ -63,6 +64,17 @@ export default function ProfilePage() {
     addContact.mutate(newContact, {
       onSuccess: () => {
         setNewContact({ name: '', phone: '', relationship: '' })
+        setIsContactDialogOpen(false)
+        toast({
+          description: '✅ Emergency contact added successfully',
+        })
+      },
+      onError: (error: any) => {
+        toast({
+          title: 'Error',
+          description: error?.response?.data?.message || 'Failed to add emergency contact',
+          variant: 'destructive',
+        })
       },
     })
   }
@@ -181,7 +193,7 @@ export default function ProfilePage() {
                 People who will be notified when you activate SOS
               </CardDescription>
             </div>
-            <Dialog>
+            <Dialog open={isContactDialogOpen} onOpenChange={setIsContactDialogOpen}>
               <DialogTrigger asChild>
                 <Button>
                   <UserPlus className="mr-2 h-4 w-4" />

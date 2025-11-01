@@ -131,7 +131,7 @@ async function testTranslationEndpoints() {
 
         console.log('\n--- Step 15: Translate Special Characters ---');
         await request('POST', '/translate', {
-            text: 'Emergency! Call 911!!!',
+            text: 'Emergency! Call 100!!!',
             targetLang: 'es'
         }, token);
 

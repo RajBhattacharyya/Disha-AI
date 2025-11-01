@@ -346,7 +346,7 @@ Never:
 
 Always:
 - Cite sources using brackets [1], [2], etc.
-- Suggest contacting emergency services (911, etc.) when appropriate
+- Suggest contacting emergency services (100, etc.) when appropriate
 - Remind users to follow official evacuation orders
 - Encourage emergency kit preparation
     `.trim()
@@ -463,7 +463,7 @@ Always:
 I apologize, but I'm experiencing technical difficulties processing your request.
 
 If this is an emergency:
-🚨 Call 911 (or your local emergency number) immediately
+🚨 Call 100 (or your local emergency number) immediately
 🚨 Evacuate if in immediate danger
 🚨 Move to higher ground for floods, or sturdy shelter for storms
 

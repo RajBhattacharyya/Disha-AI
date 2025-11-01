@@ -70,8 +70,12 @@ export function useAddEmergencyContact() {
             queryClient.invalidateQueries({
                 queryKey: ['user', 'profile', user!.id],
             })
+        },
+        onError: (error: any) => {
             toast({
-                description: 'Emergency contact added',
+                title: 'Failed to add contact',
+                description: error?.response?.data?.message || 'Something went wrong',
+                variant: 'destructive',
             })
         },
     })
@@ -89,7 +93,14 @@ export function useRemoveEmergencyContact() {
                 queryKey: ['user', 'profile', user!.id],
             })
             toast({
-                description: 'Emergency contact removed',
+                description: 'Emergency contact removed successfully',
+            })
+        },
+        onError: (error: any) => {
+            toast({
+                title: 'Failed to remove contact',
+                description: error?.response?.data?.message || 'Something went wrong',
+                variant: 'destructive',
             })
         },
     })
