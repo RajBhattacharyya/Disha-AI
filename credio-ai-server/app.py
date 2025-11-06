@@ -371,6 +371,6 @@ def get_disaster_types():
 
 
 if __name__ == "__main__":
-    port = int(os.getenv("PORT", 5000))
+    port = int(os.getenv("PORT", 8014))
     print(f"Starting server on port {port}...")
     app.run(host="0.0.0.0", port=port, debug=False)
