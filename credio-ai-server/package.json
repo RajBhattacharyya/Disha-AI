@@ -1,0 +1,29 @@
+{
+    "name": "credio-ai-server",
+    "version": "1.0.0",
+    "description": "AI-powered object detection server for emergency kit verification",
+    "main": "app.py",
+    "scripts": {
+        "setup": "python -m venv venv && .\\venv\\Scripts\\activate && pip install -r requirements.txt",
+        "start": "python app.py",
+        "test": "python test_server.py",
+        "dev": "set FLASK_ENV=development && python app.py"
+    },
+    "keywords": [
+        "yolo",
+        "object-detection",
+        "emergency",
+        "disaster-preparedness",
+        "ai",
+        "computer-vision"
+    ],
+    "author": "Credio Team",
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/RajBhattacharyya/credio"
+    },
+    "engines": {
+        "python": ">=3.9.0"
+    }
+}

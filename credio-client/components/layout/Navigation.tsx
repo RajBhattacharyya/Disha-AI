@@ -24,6 +24,7 @@ import {
   LogOut,
   Bell,
   ShieldCheck,
+  Package,
 } from 'lucide-react'
 import { useAuthStore } from '@/lib/store/auth-store'
 import { useUnreadAlerts } from '@/lib/hooks/use-alerts'
@@ -31,6 +32,7 @@ import { useUnreadAlerts } from '@/lib/hooks/use-alerts'
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: Shield },
   { href: '/disasters', label: 'Disasters', icon: AlertCircle },
+  { href: '/emergency/kit', label: 'Emergency Kit', icon: Package },
   { href: '/chat', label: 'AI Assistant', icon: MessageSquare },
   { href: '/map', label: 'Map', icon: Map },
 ]
