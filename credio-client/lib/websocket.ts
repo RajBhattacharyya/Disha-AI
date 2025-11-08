@@ -19,16 +19,19 @@ export function useWebSocket() {
         if (!user || !token) return
 
         // Initialize socket connection
-        socket = io(process.env.NEXT_PUBLIC_WS_URL || 'http://localhost:3001', {
-            transports: ['websocket', 'polling'],
-            auth: {
-                token,
-            },
-            reconnection: true,
-            reconnectionDelay: 1000,
-            reconnectionDelayMax: 5000,
-            reconnectionAttempts: 5,
-        })
+        socket = io(
+            process.env.NEXT_PUBLIC_WS_URL || 'https://server.uemcseaiml.org',
+            {
+                path: '/disha-ai/socket.io',
+                transports: ['websocket'],
+                auth: { token },
+                reconnection: true,
+                reconnectionDelay: 1000,
+                reconnectionDelayMax: 5000,
+                reconnectionAttempts: 5,
+                withCredentials: true,
+            }
+        )
 
         // Connection handlers
         socket.on('connect', () => {

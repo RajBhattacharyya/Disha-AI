@@ -12,12 +12,25 @@ import { logger } from './utils/logger'
 import adminRoutes from './routes/adminRoutes'
 
 const app: Application = express()
+
+// If behind Cloudflare/nginx, enable trust proxy so req.ip and proto work properly
+app.set('trust proxy', 1)
+
 const httpServer = createServer(app)
 
-// Initialize Socket.io
+// Socket.IO server options tuned for your deployment
 const io = new Server(httpServer, {
+  path: '/socket.io', // upstream path; cloudflared/nginx rewrites /disha-ai/socket.io -> /socket.io
+  transports: ['websocket'], // you only accept websocket (polling returns "Transport unknown")
+  allowEIO3: false, // keep Engine.IO v4 behavior
+  pingInterval: 25000, // defaults are fine; match client or tune
+  pingTimeout: 20000,
+  maxHttpBufferSize: 1_000_000, // keep or adjust for payload limits
   cors: {
-    origin: process.env.CLIENT_URL || 'http://localhost:3000',
+    origin: [
+      process.env.CLIENT_URL || 'http://localhost:3000',
+      process.env.SERVER_URL || 'https://server.uemcseaiml.org', // allow server domain too
+    ],
     credentials: true,
   },
 })
@@ -26,7 +39,10 @@ const io = new Server(httpServer, {
 app.use(helmet())
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || 'http://localhost:3000',
+    origin: [
+      process.env.CLIENT_URL || 'http://localhost:3000',
+      process.env.SERVER_URL || 'https://server.uemcseaiml.org',
+    ],
     credentials: true,
   })
 )
@@ -53,7 +69,7 @@ app.use(errorHandler)
 // Initialize WebSocket
 websocketService.initialize(io)
 
-const PORT = process.env.PORT || 3001
+const PORT = Number(process.env.PORT) || 8015
 
 httpServer.listen(PORT, () => {
   logger.info(`Server running on port ${PORT}`)
