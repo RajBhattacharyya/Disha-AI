@@ -29,6 +29,8 @@ interface EmergencyKitScannerProps {
 }
 
 export default function EmergencyKitScanner({ disasterType }: EmergencyKitScannerProps) {
+    const API_URL = process.env.NEXT_PUBLIC_AI_SERVER_URL || 'http://localhost:5000';
+
     const [isCameraActive, setIsCameraActive] = useState(false);
     const [isDetecting, setIsDetecting] = useState(false);
     const [checklist, setChecklist] = useState<ChecklistItem[]>([]);
@@ -45,7 +47,7 @@ export default function EmergencyKitScanner({ disasterType }: EmergencyKitScanne
     useEffect(() => {
         const fetchDisasterItems = async () => {
             try {
-                const response = await fetch('http://localhost:5000/api/detect-kit-items', {
+                const response = await fetch(`${API_URL}/api/detect-kit-items`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -67,7 +69,7 @@ export default function EmergencyKitScanner({ disasterType }: EmergencyKitScanne
         };
 
         fetchDisasterItems();
-    }, [disasterType]);
+    }, [disasterType, API_URL]);
 
     const startCamera = async () => {
         try {
@@ -128,7 +130,7 @@ export default function EmergencyKitScanner({ disasterType }: EmergencyKitScanne
         if (!imageData) return;
 
         try {
-            const response = await fetch('http://localhost:5000/api/detect-kit-items', {
+            const response = await fetch(`${API_URL}/api/detect-kit-items`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -158,7 +160,7 @@ export default function EmergencyKitScanner({ disasterType }: EmergencyKitScanne
         } catch (err) {
             console.error('Detection error:', err);
         }
-    }, [captureImage, disasterType]);
+    }, [captureImage, disasterType, API_URL]);
 
     const startDetection = () => {
         setIsDetecting(true);

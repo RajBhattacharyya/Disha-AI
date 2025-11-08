@@ -14,6 +14,7 @@ load_dotenv()
 
 app = Flask(__name__)
 CORS(app)
+os.environ["CUDA_VISIBLE_DEVICES"] = "" # Disable GPU usage for YOLO
 
 # Initialize YOLO model
 try:
