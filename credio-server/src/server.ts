@@ -18,18 +18,14 @@ app.set('trust proxy', 1)
 
 const httpServer = createServer(app)
 
-// Socket.IO server options tuned for your deployment
+// when creating Server:
 const io = new Server(httpServer, {
-  path: '/socket.io', // upstream path; cloudflared/nginx rewrites /disha-ai/socket.io -> /socket.io
-  transports: ['websocket'], // you only accept websocket (polling returns "Transport unknown")
-  allowEIO3: false, // keep Engine.IO v4 behavior
-  pingInterval: 25000, // defaults are fine; match client or tune
-  pingTimeout: 20000,
-  maxHttpBufferSize: 1_000_000, // keep or adjust for payload limits
+  path: '/disha-ai/socket.io',   // <<-- set to the public path the client actually uses
+  transports: ['websocket'],
   cors: {
     origin: [
       process.env.CLIENT_URL || 'http://localhost:3000',
-      process.env.SERVER_URL || 'https://server.uemcseaiml.org', // allow server domain too
+      process.env.SERVER_URL || 'https://server.uemcseaiml.org',
     ],
     credentials: true,
   },
