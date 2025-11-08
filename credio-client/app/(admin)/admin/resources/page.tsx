@@ -113,7 +113,7 @@ export default function ResourcesManagementPage() {
         },
     })
 
-    const resourcesData = resourcesResponse?.data?.resources || resourcesResponse?.resources || []
+    const resourcesData = resourcesResponse?.data?.resources || []
 
     const resetForm = () => {
         setFormData({
